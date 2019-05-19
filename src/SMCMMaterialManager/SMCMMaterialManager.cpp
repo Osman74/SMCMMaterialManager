@@ -8,8 +8,6 @@ SMCMMaterialManager::SMCMMaterialManager(const QString& pathToDB, QWidget *paren
 {
     setWindowIcon(QIcon(":resources/sqldevops.png"));
 
-    flagImport=false;
-    flagSQLQuery = false;
 
     initTree();
 
@@ -25,7 +23,13 @@ SMCMMaterialManager::SMCMMaterialManager(const QString& pathToDB, QWidget *paren
     materialTable->getButton()->setToolTip("Добавить материал к ветке");
     connect(materialTable->getButton(),SIGNAL(clicked()),this,SLOT(slot_AddMaterial()));
     materials = materialTable->getView();
-    materials->setModel(new QSqlQueryModel());
+    materials->setModel(new MySqlModel());
+    materials->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    materials->setDragEnabled(true);
+    materials->setAcceptDrops(true);
+    materials->setDropIndicatorShown(true);
+    materials->setDragDropMode(QAbstractItemView::DragDrop);
+    materials->setName("Materials");
     materials->setAlternatingRowColors(true);
     materials->setContextMenuPolicy(Qt::CustomContextMenu);
     materials->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -39,7 +43,13 @@ SMCMMaterialManager::SMCMMaterialManager(const QString& pathToDB, QWidget *paren
     modelTable->getButton()->setToolTip("Добавить модель");
     Model = modelTable->getView();
     Model->setAlternatingRowColors(true);
-    Model->setModel(new QSqlQueryModel());
+    Model->setModel(new MySqlModel());
+    Model->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    Model->setDragEnabled(true);
+    Model->setAcceptDrops(true);
+    Model->setDropIndicatorShown(true);
+    Model->setDragDropMode(QAbstractItemView::DragDrop);
+    Model->setName("Model");
     Model->setContextMenuPolicy(Qt::CustomContextMenu);
     Model->setEditTriggers(QAbstractItemView::NoEditTriggers);
     connect(Model, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_SelectProperties()));
@@ -48,7 +58,7 @@ SMCMMaterialManager::SMCMMaterialManager(const QString& pathToDB, QWidget *paren
     propertiesTable = new MyTableWidget("Свойства");
     propertiesTable->getButton()->setDisabled(true);
     Properties = propertiesTable->getView();
-    Properties->setModel(new QSqlQueryModel());
+    Properties->setModel(new MySqlModel());
     Properties->setAlternatingRowColors(true);
     Properties->setContextMenuPolicy(Qt::CustomContextMenu);
     Properties->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -65,7 +75,15 @@ SMCMMaterialManager::SMCMMaterialManager(const QString& pathToDB, QWidget *paren
 
     taskMat = taskMaterialTable->getView();
     taskMat->setSelectionMode(QTableView::SelectionMode::SingleSelection);
-    taskMat->setModel(new QSqlQueryModel());
+    taskMat->setModel(new MySqlModel());
+    taskMat->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    taskMat->setDragEnabled(true);
+    taskMat->setAcceptDrops(true);
+    taskMat->setDropIndicatorShown(true);
+    taskMat->setDragDropMode(QAbstractItemView::DragDrop);
+    taskMat->setName("TaskMaterials");
+    taskMat->setContextMenuPolicy(Qt::CustomContextMenu);
+    taskMat->setEditTriggers(QAbstractItemView::NoEditTriggers);
     taskMat->setAlternatingRowColors(true);
     taskMat->setContextMenuPolicy(Qt::CustomContextMenu);
     taskMat->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -77,8 +95,15 @@ SMCMMaterialManager::SMCMMaterialManager(const QString& pathToDB, QWidget *paren
     taskModelTable->getSelectButton()->setToolTip("Показать все модели");
     taskModelTable->getButton()->setToolTip("Добавить модель");
     taskModelTable->setStyleSheet("background:#1cd3a2");
+    connect(taskModelTable->getSelectButton(), SIGNAL(clicked()), this, SLOT(slot_SelectAllTaskModels()));
     taskModel = taskModelTable->getView();
-    taskModel->setModel(new QSqlQueryModel());
+    taskModel->setModel(new MySqlModel());
+    taskModel->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    taskModel->setDragEnabled(true);
+    taskModel->setAcceptDrops(true);
+    taskModel->setDropIndicatorShown(true);
+    taskModel->setDragDropMode(QAbstractItemView::DragDrop);
+    taskModel->setName("TaskModel");
     taskModel->setAlternatingRowColors(true);
     taskModel->setContextMenuPolicy(Qt::CustomContextMenu);
     taskModel->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -101,15 +126,20 @@ SMCMMaterialManager::SMCMMaterialManager(const QString& pathToDB, QWidget *paren
     taskMat->verticalHeader()->setDefaultSectionSize(28);
     taskModel->verticalHeader()->setDefaultSectionSize(28);
 
+    materials->initialize(&dbMaterials, &dbTask, materials, Model, taskMat, taskModel, Tree);
+    Model->initialize(&dbMaterials, &dbTask, materials, Model, taskMat, taskModel);
+    taskMat->initialize(&dbMaterials, &dbTask, materials, Model, taskMat, taskModel);
+    taskModel->initialize(&dbMaterials, &dbTask, materials, Model, taskMat, taskModel);
+
     connect(this,SIGNAL(needUpdateTableView()),this,SLOT(slot_UpdateTableView()));
     connect(insertForm,SIGNAL(needUpdateTableView()),this,SLOT(slot_UpdateTableView()));
 
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(taskMat->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(taskMat->model());
     QString str ="SELECT id, description  FROM materials;";
     model->setQuery(str, dbTask);
     connect(taskMat, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_LocalSelectModel()));
 
-    modelTable->setModel(dynamic_cast<QSqlQueryModel*>(Model->model()));
+    modelTable->setModel(dynamic_cast<MySqlModel*>(Model->model()));
 
     connect(taskModel, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_LocalSelectProperties()));
 
@@ -120,6 +150,7 @@ SMCMMaterialManager::SMCMMaterialManager(const QString& pathToDB, QWidget *paren
     //statusBar()->setStyleSheet("background: #0A0FFF");
     statusBar()->showMessage("Подключите БД", 10000);
     slot_createConnection();
+
 }
 
 void SMCMMaterialManager::initMenu(){
@@ -234,7 +265,6 @@ void SMCMMaterialManager::initMenu(){
 
     pAct_RemoveProp = new QAction("Удалить свойство");
     connect(pAct_RemoveProp,SIGNAL(triggered()),this, SLOT(slot_remove_properties()));
-
 
 }
 
@@ -482,7 +512,7 @@ void SMCMMaterialManager::slot_local_remove_model(){
         qDebug() << Query->lastQuery();
         qDebug() << Query->lastError().text();
     }
-    dynamic_cast<QSqlQueryModel*>(taskModel->model())->setQuery("SELECT models_name, description FROM materialsModels LEFT JOIN models ON materialsModels.models_name = models.name WHERE  materials_name ='"+ nameMaterial +"';",dbTask);
+    dynamic_cast<MySqlModel*>(taskModel->model())->setQuery("SELECT models_name, description FROM materialsModels LEFT JOIN models ON materialsModels.models_name = models.name WHERE  materials_name ='"+ nameMaterial +"';",dbTask);
     qDebug()<<"slot_local_remove_model";
 }
 
@@ -496,7 +526,7 @@ void SMCMMaterialManager::slot_local_remove_mat(){
         qDebug() << Query->lastQuery();
         qDebug() << Query->lastError().text();
     }
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(taskMat->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(taskMat->model());
     model->setQuery("SELECT id, description FROM materials;",dbTask);
     qDebug()<<"slot_local_remove_mat";
 }
@@ -514,7 +544,7 @@ void SMCMMaterialManager::slot_remove_properties(){
             qDebug() << Query->lastQuery();
             qDebug() << Query->lastError().text();
         }
-        QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(Properties->model());
+        MySqlModel* model = dynamic_cast<MySqlModel*>(Properties->model());
         model->setQuery("select  DISTINCT properties_name as property, value from  (select materials_name, models_name , propertyValueScalar.properties_name, value from  propertyValueScalar join modelComposition  on propertyValueScalar.properties_name = modelComposition.properties_name )  as allProp  join materialsModels on  allProp.materials_name = materialsModels.materials_name and allProp.models_name = materialsModels.models_name where materialsModels.models_name = '" + nameModel + "' and materialsModels.materials_name = '" + nameMaterial +"';",dbMaterials);
         qDebug()<<"slot_local_remove_propertir";
     }
@@ -530,7 +560,7 @@ void SMCMMaterialManager::slot_remove_properties(){
             qDebug() << Query->lastQuery();
             qDebug() << Query->lastError().text();
         }
-        QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(Properties->model());
+        MySqlModel* model = dynamic_cast<MySqlModel*>(Properties->model());
         model->setQuery("select  DISTINCT properties_name as property, value from  (select materials_name, models_name , propertyValueScalar.properties_name, value from  propertyValueScalar join modelComposition  on propertyValueScalar.properties_name = modelComposition.properties_name )  as allProp  join materialsModels on  allProp.materials_name = materialsModels.materials_name and allProp.models_name = materialsModels.models_name where materialsModels.models_name = '" + nameModel + "' and materialsModels.materials_name = '" + nameMaterial +"';",dbTask);
         qDebug()<<"slot_local_remove_propertir";
     }
@@ -547,7 +577,7 @@ void SMCMMaterialManager::slot_remove_model(){
         qDebug() << Query->lastQuery();
         qDebug() << Query->lastError().text();
     }
-    dynamic_cast<QSqlQueryModel*>(Model->model())->setQuery("SELECT models_name, description FROM materialsModels LEFT JOIN models ON materialsModels.models_name = models.name WHERE  materials_name ='"+ nameMaterial +"';",dbMaterials);
+    dynamic_cast<MySqlModel*>(Model->model())->setQuery("SELECT models_name, description FROM materialsModels LEFT JOIN models ON materialsModels.models_name = models.name WHERE  materials_name ='"+ nameMaterial +"';",dbMaterials);
     qDebug()<<"slot_remove_model";
 }
 
@@ -562,7 +592,7 @@ void SMCMMaterialManager::slot_remove_mat(){
         qDebug() << Query->lastError().text();
     }
     QString path = getFullPath(Tree->currentIndex());
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(materials->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(materials->model());
     model->setQuery("SELECT id, description FROM material_branch RIGHT JOIN materials ON material_branch.id_material = materials.id WHERE material_branch.branch  <@ '" + path + "';",dbMaterials);
     qDebug()<<"slot_remove_mat";
 
@@ -762,7 +792,7 @@ void SMCMMaterialManager::slot_local_add_model(){
     }
 
     str ="SELECT name, description  FROM models;";
-    dynamic_cast<QSqlQueryModel*>(taskModel->model())->setQuery(str,dbTask);
+    dynamic_cast<MySqlModel*>(taskModel->model())->setQuery(str,dbTask);
 }
 
 void SMCMMaterialManager::slot_local_add_mat(){
@@ -784,7 +814,7 @@ void SMCMMaterialManager::slot_local_add_mat(){
     }
 
     str ="SELECT id, description  FROM materials;";
-    dynamic_cast<QSqlQueryModel*>(taskMat->model())->setQuery(str,dbTask);
+    dynamic_cast<MySqlModel*>(taskMat->model())->setQuery(str,dbTask);
 }
 
 void SMCMMaterialManager::slot_add_properties(){
@@ -812,7 +842,7 @@ void SMCMMaterialManager::slot_add_properties(){
         }
 
         str ="SELECT name, description  FROM properties;";
-        dynamic_cast<QSqlQueryModel*>(Properties->model())->setQuery(str,dbMaterials);
+        dynamic_cast<MySqlModel*>(Properties->model())->setQuery(str,dbMaterials);
     }
      if(!properiesIsGlobal){
          QSqlQuery q(dbTask);
@@ -822,7 +852,7 @@ void SMCMMaterialManager::slot_add_properties(){
          }
 
          str ="SELECT name, description  FROM properties;";
-         dynamic_cast<QSqlQueryModel*>(Properties->model())->setQuery(str,dbTask);
+         dynamic_cast<MySqlModel*>(Properties->model())->setQuery(str,dbTask);
      }
 
 }
@@ -849,7 +879,7 @@ void SMCMMaterialManager::slot_add_model(){
     }
 
     str ="SELECT name, description  FROM models;";
-    dynamic_cast<QSqlQueryModel*>(Model->model())->setQuery(str,dbMaterials);
+    dynamic_cast<MySqlModel*>(Model->model())->setQuery(str,dbMaterials);
 }
 
 void SMCMMaterialManager::slot_RemoveClassification(){
@@ -1014,7 +1044,7 @@ void SMCMMaterialManager::slot_ChangePropertyValue(){
         }
 
         str ="SELECT name, description  FROM properties;";
-        dynamic_cast<QSqlQueryModel*>(Properties->model())->setQuery(str,dbMaterials);
+        dynamic_cast<MySqlModel*>(Properties->model())->setQuery(str,dbMaterials);
     }
 
      if(!properiesIsGlobal){
@@ -1025,7 +1055,7 @@ void SMCMMaterialManager::slot_ChangePropertyValue(){
          }
 
          str ="SELECT name, description  FROM properties;";
-         dynamic_cast<QSqlQueryModel*>(Properties->model())->setQuery(str,dbTask);
+         dynamic_cast<MySqlModel*>(Properties->model())->setQuery(str,dbTask);
      }
 
 }
@@ -1054,6 +1084,7 @@ QString SMCMMaterialManager::getFullPath(const QModelIndex& index){
       path += res[0];
       return path;
 }
+
 
 QString SMCMMaterialManager::getScheme(const QString& path){
       QString scheme;
@@ -1120,24 +1151,33 @@ void SMCMMaterialManager::slot_SelectMat()
 {
   //  qDebug()<<"slot select mat";
     QString path = getFullPath(Tree->currentIndex());
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(materials->model());
+    if(path == "Классификации")
+    {
+        slot_SelectAllMaterials();
+        qDebug() << "Выбор всех элементов";
+        return;
+    }
+    MySqlModel* model = dynamic_cast<MySqlModel*>(materials->model());
     model->setQuery("SELECT id, description FROM material_branch RIGHT JOIN materials ON material_branch.id_material = materials.id WHERE material_branch.branch  <@ '" + path + "';");
-    dynamic_cast<QSqlQueryModel*>(Model->model())->setQuery("select from nothing");
-    dynamic_cast<QSqlQueryModel*>(Properties->model())->setQuery("select from nothing");
+    dynamic_cast<MySqlModel*>(Model->model())->setQuery("select from nothing");
+    dynamic_cast<MySqlModel*>(Properties->model())->setQuery("select from nothing");
     setColumnWidth();
     pactImport->setEnabled(false);
+    QStringList l = path.split(QString("."));
+    QString nameBranch = l.last();
+    materialTable->getLabel()->setText("Материалы (" + nameBranch + ")" );
 }
 
 void SMCMMaterialManager::slot_SelectModel()
 {
     //qDebug()<<"select model";
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(Model->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(Model->model());
     nameMaterial = materials->model()->data(materials->model()->index(materials->currentIndex().row(), 0)).toString();
     QString str = "SELECT models_name, description FROM materialsModels LEFT JOIN models ON materialsModels.models_name = models.name WHERE  materials_name ='"+ nameMaterial +"';";
     dbMaterials.open();
     model->setQuery(str, dbMaterials);
     modelTable->getLabel()->setText("Модели (" + nameMaterial + ")" );
-    dynamic_cast<QSqlQueryModel*>(Properties->model())->setQuery("select from nothign");
+    dynamic_cast<MySqlModel*>(Properties->model())->setQuery("select from nothign");
     setColumnWidth();
     pactImport->setEnabled(false);
 }
@@ -1146,7 +1186,7 @@ void SMCMMaterialManager::slot_SelectProperties()
 {
     qDebug()<<"select properties";
     QString nameModel =Model->model()->data(Model->model()->index(Model->currentIndex().row(), 0)).toString();
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(Properties->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(Properties->model());
     QString str = "select  DISTINCT properties_name as property, value from  (select materials_name, models_name , propertyValueScalar.properties_name, value from  propertyValueScalar join modelComposition  on propertyValueScalar.properties_name = modelComposition.properties_name )  as allProp  join materialsModels on  allProp.materials_name = materialsModels.materials_name and allProp.models_name = materialsModels.models_name where materialsModels.models_name = '" + nameModel + "' and materialsModels.materials_name = '" + nameMaterial +"';";
     model->setQuery(str, dbMaterials);
     propertiesTable->getButton()->setDisabled(false);
@@ -1164,20 +1204,21 @@ void SMCMMaterialManager::slot_SelectProperties()
 
 void SMCMMaterialManager::slot_LocalSelectModel()
 {
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(taskModel->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(taskModel->model());
     nameMaterial = taskMat->model()->data(taskMat->model()->index(taskMat->currentIndex().row(), 0)).toString();
     QString str = "SELECT models_name, description "
                   "FROM materialsModels LEFT JOIN models ON materialsModels.models_name = models.name WHERE  materials_name ='"+ nameMaterial +"';";
     model->setQuery(str, dbTask);
     taskModelTable->getLabel()->setText("Модели (" + nameMaterial + ")" );
-    dynamic_cast<QSqlQueryModel*>(Properties->model())->setQuery("select from nothing");
+    dynamic_cast<MySqlModel*>(Properties->model())->setQuery("select from nothing");
+    pactExport->setEnabled(false);
     setColumnWidth();
 }
 
 void SMCMMaterialManager::slot_LocalSelectProperties()
 {
     QString nameModel =taskModel->model()->data(taskModel->model()->index(taskModel->currentIndex().row(), 0)).toString();
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(Properties->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(Properties->model());
     QString str = "select DISTINCT properties_name as property, value from  (select materials_name, models_name , propertyValueScalar.properties_name, value from  propertyValueScalar join modelComposition  on propertyValueScalar.properties_name = modelComposition.properties_name )  as allProp  join materialsModels on  allProp.materials_name = materialsModels.materials_name and allProp.models_name = materialsModels.models_name where materialsModels.models_name = '" + nameModel + "' and materialsModels.materials_name = '" + nameMaterial +"';";
     model->setQuery(str, dbTask);
     qDebug() << model->lastError().text();
@@ -1189,6 +1230,7 @@ void SMCMMaterialManager::slot_LocalSelectProperties()
     propertiesTable->setStyleSheet("background: #1cd3a2");
     properiesIsGlobal = false;
     pAct_ChangeProperty->setDisabled(false);
+    pactExport->setEnabled(true);
     setColumnWidth();
 }
 
@@ -1202,8 +1244,25 @@ void SMCMMaterialManager::slot_Import()
     else return;
     localQuery = new QSqlQuery(dbTask);
     QString nameMaterial = materials->model()->data(materials->model()->index(materials->currentIndex().row(), 0)).toString();
-    QString nameModel = Model->model()->data(Model->model()->index(Model->currentIndex().row(), 0)).toString();
+    QModelIndex index;
+    QModelIndexList items = Model->selectionModel()->selectedIndexes();
     QString str;
+    foreach (index, items) {
+              QString nameModel = Model->model()->data(index).toString();
+              if(!globalQuery->exec("SELECT * FROM models")){
+                      qDebug() << globalQuery->lastQuery();
+                      qDebug() << globalQuery->lastError().text();
+                  }
+              while(globalQuery->next())
+              {
+                  str = "INSERT INTO models(name, description) VALUES ('" + globalQuery->value(0).toString() + "', '" + globalQuery->value(1).toString() + "');";
+                  if(!localQuery->exec(str)){
+                      qDebug() << str;
+                      qDebug() << localQuery->lastError().text();
+                  }
+              }
+
+    }
     QSqlQuery q(dbTask);
    // qDebug() << nameMaterial;
     globalQuery->exec("SELECT * FROM materials WHERE id ='"+ nameMaterial +"';");
@@ -1216,58 +1275,33 @@ void SMCMMaterialManager::slot_Import()
             qDebug() << localQuery->lastError().text();
         }
     }
-    if(!globalQuery->exec("SELECT * FROM models WHERE name ='"+ nameModel  +"';")){
-        qDebug() << globalQuery->lastQuery();
-        qDebug() << globalQuery->lastError().text();
-    }
 
-    while(globalQuery->next())
-    {
-        str = "INSERT INTO models(name, description) VALUES ('" + globalQuery->value(0).toString() + "', '" + globalQuery->value(1).toString() + "');";
-        if(!localQuery->exec(str)){
-            qDebug() << str;
-            qDebug() << localQuery->lastError().text();
+
+    foreach (index, items) {
+              QString nameModel = Model->model()->data(index).toString();
+        if(!globalQuery->exec("select  DISTINCT properties_name as property, value from  (select materials_name, models_name , propertyValueScalar.properties_name, value from  propertyValueScalar join modelComposition  on propertyValueScalar.properties_name = modelComposition.properties_name )  as allProp  join materialsModels on  allProp.materials_name = materialsModels.materials_name and allProp.models_name = materialsModels.models_name where materialsModels.models_name = '" + nameModel + "' and materialsModels.materials_name = '" + nameMaterial +"';")){
+            qDebug()<<globalQuery->lastQuery();
+            qDebug()<<globalQuery->lastError().text();
+
+        }
+        while(globalQuery->next())
+        {
+            str = "INSERT INTO properties(name) values ('" + globalQuery->value(0).toString() + "');";
+            if(!localQuery->exec(str)){
+                qDebug() << str;
+                qDebug() << localQuery->lastError().text();;
+            }
+        }
+        globalQuery->exec("SELECT * FROM materialsModels WHERE models_name = '" + nameModel + "' AND materials_name = '" + nameMaterial + "';");
+        while(globalQuery->next())
+        {
+            str = "INSERT INTO materialsModels(materials_name, models_name) VALUES ('" + globalQuery->value(0).toString() + "', '" + globalQuery->value(1).toString() + "');";
+            if(!localQuery->exec(str)){
+                qDebug() << str;
+                qDebug() << localQuery->lastError().text();;
+            }
         }
     }
-
-
-    if(!globalQuery->exec("select  DISTINCT properties_name as property, value from  (select materials_name, models_name , propertyValueScalar.properties_name, value from  propertyValueScalar join modelComposition  on propertyValueScalar.properties_name = modelComposition.properties_name )  as allProp  join materialsModels on  allProp.materials_name = materialsModels.materials_name and allProp.models_name = materialsModels.models_name where materialsModels.models_name = '" + nameModel + "' and materialsModels.materials_name = '" + nameMaterial +"';")){
-        qDebug()<<globalQuery->lastQuery();
-        qDebug()<<globalQuery->lastError().text();
-
-    }
-    while(globalQuery->next())
-    {
-        str = "INSERT INTO properties(name) values ('" + globalQuery->value(0).toString() + "');";
-        if(!localQuery->exec(str)){
-            qDebug() << str;
-            qDebug() << localQuery->lastError().text();;
-        }
-    }
-
-    if(!globalQuery->exec("SELECT * FROM modelComposition WHERE models_name='"+ nameModel  +"';")){
-        qDebug()<<globalQuery->lastQuery();
-        qDebug()<<globalQuery->lastError().text();
-    }
-    while(globalQuery->next())
-    {
-        str = "INSERT INTO modelComposition(models_name, properties_name) VALUES ('" + globalQuery->value(0).toString() + "', '" + globalQuery->value(1).toString() + "');";
-        if(!localQuery->exec(str)){
-            qDebug() << str;
-            qDebug() << localQuery->lastError().text();;
-        }
-    }
-
-    globalQuery->exec("SELECT * FROM materialsModels WHERE models_name = '" + nameModel + "' AND materials_name = '" + nameMaterial + "';");
-    while(globalQuery->next())
-    {
-        str = "INSERT INTO materialsModels(materials_name, models_name) VALUES ('" + globalQuery->value(0).toString() + "', '" + globalQuery->value(1).toString() + "');";
-        if(!localQuery->exec(str)){
-            qDebug() << str;
-            qDebug() << localQuery->lastError().text();;
-        }
-    }
-
     globalQuery->exec("SELECT * FROM propertyValueScalar WHERE materials_name = '" + nameMaterial + "';");
     while(globalQuery->next())
     {
@@ -1277,10 +1311,9 @@ void SMCMMaterialManager::slot_Import()
             qDebug() << localQuery->lastError().text();;
         }
     }
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(taskMat->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(taskMat->model());
     str ="SELECT id, description  FROM materials;";
     model->setQuery(str, dbTask);
-    flagImport = true;
     setColumnWidth();
     statusBar()->showMessage("Успешно", 3000);
 }
@@ -1288,11 +1321,13 @@ void SMCMMaterialManager::slot_Import()
 void SMCMMaterialManager::slot_Export()
 {
     QString nameMaterial = taskMat->model()->data(taskMat->model()->index(taskMat->currentIndex().row(), 0)).toString();
-    QString nameModel = taskModel->model()->data(taskModel->model()->index(taskModel->currentIndex().row(), 0)).toString();
+    QModelIndexList items = taskModel->selectionModel()->selectedIndexes();
     QSqlQuery* globalQuery = new QSqlQuery(dbMaterials);
     QSqlQuery* localQuery = new QSqlQuery(dbTask);
+    QModelIndex index;
     localQuery->exec("SELECT * FROM materials WHERE id ='"+ nameMaterial +"';");
     QString str;
+
     while(localQuery->next())
     {
        // qDebug() << localQuery->value(0).toString();
@@ -1302,17 +1337,21 @@ void SMCMMaterialManager::slot_Export()
             qDebug()<<globalQuery->lastError().text();
         }
     }
-    localQuery->exec("SELECT * FROM models WHERE name ='"+ nameModel  +"';");
-    while(localQuery->next())
-    {
-        str = "INSERT INTO models(name, description) VALUES ('" + localQuery->value(0).toString() + "', '" + localQuery->value(1).toString() + "');";
-        if(!globalQuery->exec(str)){
-            qDebug()<<globalQuery->lastQuery();
-            qDebug()<<globalQuery->lastError().text();
-        }
+    foreach (index, items) {
+              QString nameModel = taskModel->model()->data(index).toString();
+              localQuery->exec("SELECT * FROM models WHERE name ='"+ nameModel  +"';");
+              while(localQuery->next())
+              {
+                  str = "INSERT INTO models(name, description) VALUES ('" + localQuery->value(0).toString() + "', '" + localQuery->value(1).toString() + "');";
+                  if(!globalQuery->exec(str)){
+                      qDebug()<<globalQuery->lastQuery();
+                      qDebug()<<globalQuery->lastError().text();
+                  }
+              }
     }
 
-    localQuery->exec("select  DISTINCT properties_name as property, value from  (select materials_name, models_name , propertyValueScalar.properties_name, value from  propertyValueScalar join modelComposition  on propertyValueScalar.properties_name = modelComposition.properties_name )  as allProp  join materialsModels on  allProp.materials_name = materialsModels.materials_name and allProp.models_name = materialsModels.models_name where materialsModels.models_name = '" + nameModel + "' and materialsModels.materials_name = '" + nameMaterial +"';");
+
+    //localQuery->exec("select  DISTINCT properties_name as property, value from  (select materials_name, models_name , propertyValueScalar.properties_name, value from  propertyValueScalar join modelComposition  on propertyValueScalar.properties_name = modelComposition.properties_name )  as allProp  join materialsModels on  allProp.materials_name = materialsModels.materials_name and allProp.models_name = materialsModels.models_name where materialsModels.models_name = '" + nameModel + "' and materialsModels.materials_name = '" + nameMaterial +"';");
     while(localQuery->next())
     {
         str = "INSERT INTO properties(name) values ('" + localQuery->value(0).toString() + "');";
@@ -1321,14 +1360,16 @@ void SMCMMaterialManager::slot_Export()
             qDebug()<<globalQuery->lastError().text();
         }
     }
-
-    localQuery->exec("SELECT * FROM modelComposition WHERE models_name ='"+ nameModel  +"';");
-    while(localQuery->next())
-    {
-        str = "INSERT INTO modelComposition(models_name, properties_name) VALUES ('" + localQuery->value(0).toString() + "', '" + localQuery->value(1).toString() + "');";
-        if(!globalQuery->exec(str)){
-            qDebug()<<globalQuery->lastQuery();
-            qDebug()<<globalQuery->lastError().text();
+    foreach (index, items) {
+              QString nameModel = taskModel->model()->data(index).toString();
+        localQuery->exec("SELECT * FROM modelComposition WHERE models_name ='"+ nameModel  +"';");
+        while(localQuery->next())
+        {
+            str = "INSERT INTO modelComposition(models_name, properties_name) VALUES ('" + localQuery->value(0).toString() + "', '" + localQuery->value(1).toString() + "');";
+            if(!globalQuery->exec(str)){
+                qDebug()<<globalQuery->lastQuery();
+                qDebug()<<globalQuery->lastError().text();
+            }
         }
     }
 //    localQuery->exec("SELECT * FROM materialsModels;");
@@ -1342,17 +1383,18 @@ void SMCMMaterialManager::slot_Export()
 //            qDebug()<<globalQuery->lastError().text();
 //        }
 //    }
-
-    localQuery->exec("SELECT * FROM materialsModels WHERE models_name = '" + nameModel + "' AND materials_name = '" + nameMaterial + "';");
-    while(localQuery->next())
-    {
-        str = "INSERT INTO materialsModels(materials_name, models_name) VALUES ('" + localQuery->value(0).toString() + "', '" + localQuery->value(1).toString() + "');";
-        if(!globalQuery->exec(str)){
-            qDebug() << str;
-            qDebug() << globalQuery->lastError().text();;
+    foreach (index, items) {
+        QString nameModel = Model->model()->data(index).toString();
+        localQuery->exec("SELECT * FROM materialsModels WHERE models_name = '" + nameModel + "' AND materials_name = '" + nameMaterial + "';");
+        while(localQuery->next())
+        {
+            str = "INSERT INTO materialsModels(materials_name, models_name) VALUES ('" + localQuery->value(0).toString() + "', '" + localQuery->value(1).toString() + "');";
+            if(!globalQuery->exec(str)){
+                qDebug() << str;
+                qDebug() << globalQuery->lastError().text();;
+            }
         }
     }
-
     localQuery->exec("SELECT * FROM propertyValueScalar WHERE materials_name = '" + nameMaterial + "';");
     while(localQuery->next())
     {
@@ -1393,7 +1435,7 @@ void SMCMMaterialManager::slot_AddLib(const QString & newLib)
        qDebug()<<globalQuery->lastQuery();
        qDebug()<<globalQuery->lastError().text();
    }
-  // QSqlQueryModel* model = new QSqlQueryModel();
+  // MySqlModel* model = new MySqlModel();
    //QSqlQuery* localQuery = new QSqlQuery(dbTask);
 
    QSqlQuery* query = new QSqlQuery(dbMaterials);
@@ -1415,7 +1457,7 @@ void SMCMMaterialManager::slot_AddLib(const QString & newLib)
 void SMCMMaterialManager::slot_UpdateTableView(){
     qDebug()<<"\nBegin update";
     if(taskMat->model())
-    dynamic_cast<QSqlQueryModel*>(taskMat->model())->setQuery("SELECT id, description FROM materials;",dbTask);
+    dynamic_cast<MySqlModel*>(taskMat->model())->setQuery("SELECT id, description FROM materials;",dbTask);
 
 
     QSqlQuery query(dbMaterials);
@@ -1457,9 +1499,9 @@ void SMCMMaterialManager::slot_DeleteMat()
     if(!localQuery->exec(str)){
         qDebug() << localQuery->lastError().text();
     }
-    dynamic_cast<QSqlQueryModel*>(taskMat->model())->setQuery("SELECT name, description FROM materials;",dbTask);
-    dynamic_cast<QSqlQueryModel*>(taskModel->model())->setQuery("select from nothing");
-    dynamic_cast<QSqlQueryModel*>(Properties->model())->setQuery("select from nothing");
+    dynamic_cast<MySqlModel*>(taskMat->model())->setQuery("SELECT name, description FROM materials;",dbTask);
+    dynamic_cast<MySqlModel*>(taskModel->model())->setQuery("select from nothing");
+    dynamic_cast<MySqlModel*>(Properties->model())->setQuery("select from nothing");
 
     setColumnWidth();
 }
@@ -1475,9 +1517,10 @@ void SMCMMaterialManager::slot_DeleteModel()
         qDebug() <<localQuery->lastQuery();
         qDebug() << localQuery->lastError().text();
     }
-    dynamic_cast<QSqlQueryModel*>(taskModel->model())->setQuery("SELECT models_name, description FROM materialsModels LEFT JOIN models ON materialsModels.models_name = models.name WHERE  materials_name ='"+ nameMaterial +"';",dbTask);
+    dynamic_cast<MySqlModel*>(taskModel->model())->setQuery("SELECT models_name, description FROM materialsModels LEFT JOIN models ON materialsModels.models_name = models.name WHERE  materials_name ='"+ nameMaterial +"';",dbTask);
     Properties->setModel(nullptr);
     setColumnWidth();
+    qDebug() << "Удаление модели " << nameModel;
 }
 
 void SMCMMaterialManager::setColumnWidth() {
@@ -1508,40 +1551,42 @@ void SMCMMaterialManager::slot_Help(){
 */
 void SMCMMaterialManager::slot_SelectAllMaterials()
 {
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(materials->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(materials->model());
     model->setQuery("SELECT id, description FROM materials;");
+    materialTable->getLabel()->setText("Материалы (Все)" );
     qDebug()<<"выбрать все материалы";
 }
 
 void SMCMMaterialManager::slot_SelectAllModels()
 {
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(Model->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(Model->model());
     QString str = "SELECT name, description FROM models;";
     model->setQuery(str, dbMaterials);
+    modelTable->getLabel()->setText("Модели (Все)" );
     qDebug()<<"выбрать все модели";
-
+    pactImport->setEnabled(false);
 }
 
 void SMCMMaterialManager::slot_SelectAllProperties()
 {
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(Properties->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(Properties->model());
     QString str = "SELECT name, description FROM properties;";
     model->setQuery(str, dbMaterials);
+    propertiesTable->getLabel()->setText("Материалы (Все)" );
     qDebug()<<"выбрать все свойства";
 }
 
 void SMCMMaterialManager::slot_SelectAllTaskModels()
 {
-    QSqlQueryModel* model = dynamic_cast<QSqlQueryModel*>(taskModel->model());
+    MySqlModel* model = dynamic_cast<MySqlModel*>(taskModel->model());
     QString str = "SELECT name, description FROM models;";
     model->setQuery(str, dbTask);
     qDebug()<<"выбрать все локальные модели";
+    pactExport->setEnabled(false);
 }
-
 
 SMCMMaterialManager::~SMCMMaterialManager()
 {
-
     insertForm->close();
     delete connectionForm;
     delete m_Layout;

@@ -1,6 +1,7 @@
 #ifndef SMCMMaterialManager_H
 #define SMCMMaterialManager_H
 
+#include <QtGui>
 #include <QtWidgets>
 #include <QtSql/QSqlQueryModel>
 #include <QtSql/QSqlDatabase>
@@ -17,18 +18,19 @@
 #include<QList>
 #include <QSqlDriver>
 #include <QStringListModel>
-#include "src/ConnectionForm/connectionform.h"
-#include "src/InsertForm/insertform.h"
-#include "src/ExportForm/exportform.h"
-#include "src/SH_Tree/sh_tree.h"
-#include "src/Dialog/dialog.h"
-#include "src/MyTableWidget/mytablewidget.h"
-#include "src/MyTreeWidget/mytreewidget.h"
-#include "src/CorrelateDialog/correlatedialog.h"
-#include "src/PropertiesValueSetter/propertiesvaluesetter.h"
-#include "src/ConnectionDialog/connectiondialog.h"
-#include "src/HelpBrowser/helpbrowser.h"
-#include "src/PropertyValueChangeDialog/propertyvaluechangedialog.h"
+#include "src/SMCMMaterialManager/ConnectionForm/connectionform.h"
+#include "src/SMCMMaterialManager/InsertForm/insertform.h"
+#include "src/SMCMMaterialManager/ExportForm/exportform.h"
+#include "src/SMCMMaterialManager/SH_Tree/sh_tree.h"
+#include "src/SMCMMaterialManager/Dialog/dialog.h"
+#include "src/SMCMMaterialManager/MyTableWidget/mytablewidget.h"
+#include "src/SMCMMaterialManager/MyTreeWidget/mytreewidget.h"
+#include "src/SMCMMaterialManager/CorrelateDialog/correlatedialog.h"
+#include "src/SMCMMaterialManager/PropertiesValueSetter/propertiesvaluesetter.h"
+#include "src/SMCMMaterialManager/ConnectionDialog/connectiondialog.h"
+#include "src/SMCMMaterialManager/HelpBrowser/helpbrowser.h"
+#include "src/SMCMMaterialManager/PropertyValueChangeDialog/propertyvaluechangedialog.h"
+#include "mytableview.h"
 
 class SMCMMaterialManager : public QMainWindow
 {
@@ -54,11 +56,11 @@ private:
 
     QTreeView* Tree;
     QTreeWidget* classification;
-    QTableView* materials;
-    QTableView* Model;
-    QTableView* Properties;
-    QTableView* taskMat;
-    QTableView* taskModel;
+    MyTableView* materials;
+    MyTableView* Model;
+    MyTableView* Properties;
+    MyTableView* taskMat;
+    MyTableView* taskModel;
 
     MyTableWidget* materialTable;
     MyTableWidget* modelTable;
@@ -107,9 +109,6 @@ private:
 
     QString newLib;
     QTextEdit* InputLib;
-
-    bool flagImport;
-    bool flagSQLQuery;
 
     void setColumnWidth();
     QString getFullPath(const QModelIndex& index);
