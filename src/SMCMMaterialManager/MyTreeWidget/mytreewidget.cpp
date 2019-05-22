@@ -10,7 +10,7 @@ MyTreeWidget::MyTreeWidget(const QString& p_tableName, TreeModel* p_model, QWidg
     ui->treeView->setModel(p_model);
 }
 
-QTreeView* MyTreeWidget::getView(){
+MyTreeView* MyTreeWidget::getView(){
     return ui->treeView;
 }
 

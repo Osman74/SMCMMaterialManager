@@ -16,9 +16,9 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QTreeView>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include <mytreeview.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -30,7 +30,7 @@ public:
     QHBoxLayout *hLayout;
     QLabel *label;
     QPushButton *pushButton;
-    QTreeView *treeView;
+    MyTreeView *treeView;
 
     void setupUi(QWidget *MyTreeWidget)
     {
@@ -74,7 +74,7 @@ public:
 
         vLayout->addLayout(hLayout);
 
-        treeView = new QTreeView(MyTreeWidget);
+        treeView = new MyTreeView(MyTreeWidget);
         treeView->setObjectName(QStringLiteral("treeView"));
         treeView->setMidLineWidth(0);
 

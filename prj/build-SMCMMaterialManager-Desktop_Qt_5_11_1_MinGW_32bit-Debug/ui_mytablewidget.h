@@ -106,7 +106,7 @@ public:
     {
         MyTableWidget->setWindowTitle(QApplication::translate("MyTableWidget", "Form", nullptr));
         label->setText(QApplication::translate("MyTableWidget", "text", nullptr));
-        pushButton_2->setText(QApplication::translate("MyTableWidget", "all", nullptr));
+        pushButton_2->setText(QApplication::translate("MyTableWidget", "\320\222\321\201\320\265", nullptr));
         pushButton->setText(QString());
     } // retranslateUi
 

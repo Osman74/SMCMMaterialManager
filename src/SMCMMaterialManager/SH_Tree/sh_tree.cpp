@@ -34,13 +34,13 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     return item->data(index.column());
 }
 
-Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
-{
-    if (!index.isValid())
-        return 0;
+//Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
+//{
+//    if (!index.isValid())
+//        return 0;
 
-    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
-}
+//    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+//}
 
 TreeItem *TreeModel::getItem(const QModelIndex &index) const
 {
@@ -222,4 +222,33 @@ void TreeModel::setupModelData(QSqlDatabase& global_db, TreeItem *parent)
     {
         addData(branches[i].split(QString(".")), rootItem);
     }
+}
+
+Qt::DropActions TreeModel::supportedDropActions() const
+{
+    return Qt::CopyAction;
+}
+
+Qt::DropActions TreeModel::supportedDragActions() const{
+    return Qt::CopyAction;
+}
+
+Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
+ {
+     if (index.isValid())
+         return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+     else
+         return Qt::ItemIsDropEnabled | Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+ }
+
+bool TreeModel::dropMimeData(const QMimeData *data,Qt::DropAction action, int row, int column, const QModelIndex &parent)
+{
+    if (action == Qt::IgnoreAction)
+        return true;
+
+//    if (!data->hasFormat("application/vnd.text.list"))
+//        return false;
+
+    if (column > 0)
+        return false;
 }

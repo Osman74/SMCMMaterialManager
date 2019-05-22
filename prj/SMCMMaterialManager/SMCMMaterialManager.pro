@@ -28,15 +28,9 @@ SOURCES += main.cpp \
     ../../src/SMCMMaterialManager/HelpBrowser/helpbrowser.cpp \
     ../../src/SMCMMaterialManager/PropertiesValueSetter/propertiesvaluesetter.cpp \
     ../../src/SMCMMaterialManager/PropertyValueChangeDialog/propertyvaluechangedialog.cpp \  #\
-    mysqlmodel.cpp \
-    mytableview.cpp
-#    ui_connectiondialog.h \
-#    ui_correlatedialog.h \
-#    ui_dialog.h \
-#    ui_mytablewidget.h \
-#    ui_mytreewidget.h \
-#    ui_propertiesvaluesetter.h \
-#    ui_properyvaluechangedialog.h \
+    ../../src/SMCMMaterialManager/MySQLModel/mysqlmodel.cpp \
+    ../../src/SMCMMaterialManager/MyTableView/mytableview.cpp \
+    ../../src/SMCMMaterialManager/MyTreeView/mytreeview.cpp
 
 FORMS    += \
     ../../ui/SMCMMaterialManager/connectiondialog.ui \
@@ -98,5 +92,6 @@ HEADERS += \
     ../../ui/SMCMMaterialManager/ui_mytreewidget.h \
     ../../ui/SMCMMaterialManager/ui_propertiesvaluesetter.h \
     ../../ui/SMCMMaterialManager/ui_properyvaluechangedialog.h \
-    mysqlmodel.h \
-    mytableview.h
+    ../../src/SMCMMaterialManager/MySQLModel/mysqlmodel.h \
+    ../../src/SMCMMaterialManager/MyTableView/mytableview.h \
+    ../../src/SMCMMaterialManager/MyTreeView/mytreeview.h

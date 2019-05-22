@@ -16,6 +16,7 @@ INPUT(
 ./release\propertyvaluechangedialog.o
 ./release\mysqlmodel.o
 ./release\mytableview.o
+./release\mytreeview.o
 ./release\qrc_resources.o
 ./release\moc_connectiondialog.o
 ./release\moc_correlatedialog.o

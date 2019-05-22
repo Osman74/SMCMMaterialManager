@@ -79,7 +79,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../../qrc/SMCMMaterialManager/resources.qrc">
            <normaloff>:/resources/FAQ.png</normaloff>:/resources/FAQ.png</iconset>
          </property>
          <property name="checkable">
@@ -99,7 +99,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QTreeView" name="treeView">
+      <widget class="MyTreeView" name="treeView">
        <property name="midLineWidth">
         <number>0</number>
        </property>
@@ -109,8 +109,15 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MyTreeView</class>
+   <extends>QTreeView</extends>
+   <header location="global">mytreeview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="../../qrc/SMCMMaterialManager/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

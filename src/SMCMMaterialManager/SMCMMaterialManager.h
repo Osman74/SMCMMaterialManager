@@ -44,7 +44,7 @@ public:
 private:
     QString nameMaterial;
 
-    bool properiesIsGlobal;
+    bool propertiesIsGlobal;
 
     ConnectionDialog* connectionForm;
     cls_insert_form* insertForm;
@@ -54,9 +54,9 @@ private:
     QSqlDatabase dbMaterials;
     QSqlDatabase dbTask;
 
-    QTreeView* Tree;
+    MyTreeView* Tree;
     QTreeWidget* classification;
-    MyTableView* materials;
+    MyTableView* Materials;
     MyTableView* Model;
     MyTableView* Properties;
     MyTableView* taskMat;
@@ -73,8 +73,10 @@ private:
     QAction* pactImport;
     QAction* pactExport;
     QAction* pactAddData;
-    QAction* pactDeleteMat;
-    QAction* pactDeleteModel;
+    QAction* pactCancelCorrelationClassificationAndMaterial;
+    QAction* pactCancelCorrelationMaterialAndModel;
+    QAction* pactTaskCancelCorrelationMaterialAndModel;
+    QAction* pactCancelCorrelationMaterialAndPropertie;
     QAction* pactSQLQuery;
     QAction* pactFAQ;
 
@@ -135,21 +137,21 @@ public slots:
     void slot_RemoveBranch();
 
     //слоты к остальным представлениям
-    void slot_local_add_model();
-    void slot_local_add_mat();
-    void slot_add_properties();
-    void slot_add_model();
+    void slot_LocalAddModel();
+    void slot_LocalAddMaterial();
+    void slot_AddProperties();
+    void slot_AddModel();
 
-    void slot_local_remove_model();
-    void slot_local_remove_mat();
-    void slot_remove_properties();
-    void slot_remove_model();
-    void slot_remove_mat();
+    void slot_LocalRemoveModel();
+    void slot_LocalRemoveMaterial();
+    void slot_RemoveProperties();
+    void slot_RemoveModel();
+    void slot_RemoveMaterial();
 
     void slot_ChangePropertyValue();
 
-    void slot_createConnectionDialog();
-    void slot_createConnection();
+    void slot_CreateConnectionDialog();
+    void slot_CreateConnection();
 
 
     void slot_SelectMat();
@@ -171,8 +173,10 @@ public slots:
     void slot_SetLocalPropertiesValue();
     void slot_SetPropertiesValue();
 
-    void slot_DeleteMat();
-    void slot_DeleteModel();
+    void slot_CancelCorrelationClassificationAndMaterial();
+    void slot_CancelCorrelationMaterialAndModel();
+    void slot_TaskCancelCorrelationMaterialAndModel();
+    void slot_CancelCorrelationMaterialAndPropertie();
 
     void slot_ShowInsertForm();
     void slot_CloseInsertForm();

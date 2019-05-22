@@ -8,6 +8,10 @@
 #include <QSqlQuery>
 #include <QtSql/QSqlQueryModel>
 #include <QDebug>
+#include <QDropEvent>
+#include <QDebug>
+#include <QDrag>
+#include <QMimeData>
 
 class TreeModel : public QAbstractItemModel
 {
@@ -44,6 +48,10 @@ public:
     bool removeRows(int position, int rows,
                     const QModelIndex &parent = QModelIndex()) override;
     void addData(const QStringList &lines, TreeItem *parent, int i = 0);
+
+    Qt::DropActions supportedDropActions() const;
+    Qt::DropActions supportedDragActions() const;
+    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
 private:
     void setupModelData(QSqlDatabase& global_db, TreeItem *parent);
     TreeItem *getItem(const QModelIndex &index) const;

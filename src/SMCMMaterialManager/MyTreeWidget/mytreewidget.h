@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include "src/SMCMMaterialManager/SH_Tree/sh_tree.h"
+#include <mytreeview.h>
 
 
 namespace Ui {
@@ -16,7 +17,7 @@ class MyTreeWidget : public QWidget
 public:
     explicit MyTreeWidget(const QString& p_tableName = "", TreeModel* p_model = nullptr, QWidget *parent = nullptr);
     ~MyTreeWidget();
-    QTreeView* getView();
+    MyTreeView* getView();
     QAbstractItemModel* getModel();
     QLabel* getLabel();
     void setModel(QSqlQueryModel* p_model);
